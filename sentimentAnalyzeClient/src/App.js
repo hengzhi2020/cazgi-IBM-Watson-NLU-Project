@@ -47,31 +47,24 @@ class App extends React.Component {
 
     if (this.state.mode === 'url') {
       url =
-        url +
-        '/url/sentiment/?url=' +
-        document.getElementById('textinput').value;
+        url + '/url/sentiment/' + document.getElementById('textinput').value;
     } else {
       url =
         url +
         '/text/sentiment/?text=' +
         document.getElementById('textinput').value;
     }
-    console.log('endForSentimentAnalysis _ url is => ', url);
+
     ret = axios.get(url);
     ret
       .then((response) => {
-        //Include code here to check the sentiment and fomrat the data accordingly
+        let output;
 
-        console.log('AXIOS GET Sentiment - response.data: ', response.data);
-
-        this.setState({ sentimentOutput: response.data });
-        let output = response.data;
-
-        if (response.data === 'positive') {
+        if (response.data.split('"')[5] === 'positive') {
           output = (
             <div style={{ color: 'green', fontSize: 20 }}>{response.data}</div>
           );
-        } else if (response.data === 'negative') {
+        } else if (response.data.split('"')[5] === 'negative') {
           output = (
             <div style={{ color: 'red', fontSize: 20 }}>{response.data}</div>
           );
@@ -83,7 +76,6 @@ class App extends React.Component {
         this.setState({ sentimentOutput: output });
       })
       .catch((err) => {
-        console.log('sendForSentimentAnalysis: request failed');
         console.error('There was an error in axios: ', err);
       });
   };
@@ -93,8 +85,7 @@ class App extends React.Component {
     let ret = '';
     let url = 'http://localhost:8080';
     if (this.state.mode === 'url') {
-      url =
-        url + '/url/emotion/?url=' + document.getElementById('textinput').value;
+      url = url + '/url/emotion/' + document.getElementById('textinput').value;
     } else {
       url =
         url +
@@ -102,18 +93,20 @@ class App extends React.Component {
         document.getElementById('textinput').value;
     }
 
-    console.log('sendForEmotionAnalysis _ url is => ', url);
     ret = axios.get(url);
-
     ret
       .then((response) => {
-        console.log('AXIOS GET Emotion - response.data: ', response.data);
+        let trimdata = response.data
+          .split('/emotion is')[1]
+          .split('{')[1]
+          .split('}')[0]
+          .split(',');
+
         this.setState({
-          sentimentOutput: <EmotionTable emotions={response.data} />,
+          sentimentOutput: <EmotionTable emotions={trimdata} />,
         });
       })
       .catch((err) => {
-        console.log('sendForEmotionAnalysis: request failed');
         console.error('There was an error in axios: ', err);
       });
   };
